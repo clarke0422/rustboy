@@ -52,30 +52,6 @@ impl Cpu {
         Cpu { registers, ram }
     }
 
-    pub fn print_8bit_registers(&mut self) {
-        println!(
-            "{}",
-            ALL_8BIT_ADDRESSES.map(|address|
-                format!("{:?}: {:X}", address.clone(), self.read_r8(address))
-            ).join(", ")
-        );
-    }
-
-    pub fn print_16bit_registers(&mut self) {
-        println!(
-            "{}",
-            ALL_16BIT_ADDRESSES.map(|address|
-                format!("{:?}: {:X}", address.clone(), self.read_r16(address))
-            ).join(", ")
-        );
-    }
-
-    pub fn set_all_registers(&mut self, value: u8) {
-        for register in self.registers.iter_mut() {
-            *register = value;
-        }
-    }
-
     fn read_r8(&mut self, address: R8Address) -> u8 {
         self.registers[address as usize]
     }
@@ -105,6 +81,30 @@ impl Cpu {
 
     fn write_ram(&mut self, address: u16, value: u8) {
         self.ram[address as usize] = value;
+    }
+
+    pub fn print_8bit_registers(&mut self) {
+        println!(
+            "{}",
+            ALL_8BIT_ADDRESSES.map(|address|
+                format!("{:?}: {:X}", address.clone(), self.read_r8(address))
+            ).join(", ")
+        );
+    }
+
+    pub fn print_16bit_registers(&mut self) {
+        println!(
+            "{}",
+            ALL_16BIT_ADDRESSES.map(|address|
+                format!("{:?}: {:X}", address.clone(), self.read_r16(address))
+            ).join(", ")
+        );
+    }
+
+    pub fn set_all_registers(&mut self, value: u8) {
+        for register in self.registers.iter_mut() {
+            *register = value;
+        }
     }
 
     pub fn debug_routine(&mut self) {
