@@ -99,14 +99,37 @@ impl Cpu {
         self.registers[register_index + 1] = low;
     }
 
+    fn read_ram(&mut self, address: u16) -> u8 {
+        self.ram[address as usize]
+    }
+
+    fn write_ram(&mut self, address: u16, value: u8) {
+        self.ram[address as usize] = value;
+    }
+
     pub fn debug_routine(&mut self) {
         self.print_8bit_registers();
         self.print_16bit_registers();
+        println!();
+
         self.set_all_registers(0xff);
         self.print_8bit_registers();
         self.print_16bit_registers();
+        println!();
+
+        self.write_8bit_register(R8Address::H, 0x18);
+        self.print_8bit_registers();
+        self.print_16bit_registers();
+        println!();
+
         self.write_16bit_register(R16Address::AF, 0xabcd);
         self.print_8bit_registers();
         self.print_16bit_registers();
+        println!();
+
+        println!("{:X}", self.read_ram(0x0000));
+        self.write_ram(0x0000, 42);
+        println!("{:X}", self.read_ram(0x0000));
+        println!();
     }
 }
