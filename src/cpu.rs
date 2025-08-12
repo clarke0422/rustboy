@@ -87,11 +87,11 @@ impl Cpu {
         (high << 8) | low
     }
 
-    fn write_8bit_register(&mut self, address: R8Address, value: u8) {
+    fn write_r8(&mut self, address: R8Address, value: u8) {
         self.registers[address as usize] = value;
     }
 
-    fn write_16bit_register(&mut self, address: R16Address, value: u16) {
+    fn write_r16(&mut self, address: R16Address, value: u16) {
         let high = (value >> 8) as u8;
         let low = value as u8;
         let register_index = address as usize;
@@ -117,12 +117,12 @@ impl Cpu {
         self.print_16bit_registers();
         println!();
 
-        self.write_8bit_register(R8Address::H, 0x18);
+        self.write_r8(R8Address::H, 0x18);
         self.print_8bit_registers();
         self.print_16bit_registers();
         println!();
 
-        self.write_16bit_register(R16Address::AF, 0xabcd);
+        self.write_r16(R16Address::AF, 0xabcd);
         self.print_8bit_registers();
         self.print_16bit_registers();
         println!();
