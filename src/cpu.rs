@@ -83,6 +83,11 @@ impl Cpu {
         self.ram[address as usize] = value;
     }
 
+    fn load_r8_r8(&mut self, dest: R8Address, source: R8Address) {
+        let value = self.read_r8(source);
+        self.write_r8(dest, value);
+    }
+
     pub fn print_8bit_registers(&mut self) {
         println!(
             "{}",
@@ -108,11 +113,7 @@ impl Cpu {
     }
 
     pub fn debug_routine(&mut self) {
-        self.print_8bit_registers();
-        self.print_16bit_registers();
-        println!();
-
-        self.set_all_registers(0xff);
+        self.set_all_registers(0);
         self.print_8bit_registers();
         self.print_16bit_registers();
         println!();
@@ -122,14 +123,9 @@ impl Cpu {
         self.print_16bit_registers();
         println!();
 
-        self.write_r16(R16Address::AF, 0xabcd);
+        self.load_r8_r8(R8Address::D, R8Address::H);
         self.print_8bit_registers();
         self.print_16bit_registers();
-        println!();
-
-        println!("{:X}", self.read_ram(0x0000));
-        self.write_ram(0x0000, 42);
-        println!("{:X}", self.read_ram(0x0000));
         println!();
     }
 }
