@@ -13,7 +13,7 @@ enum R8Address {
     L = 7,
 }
 
-const ALL_8BIT_ADDRESSES: [R8Address;8] = [
+const ALL_8BIT_ADDRESSES: [R8Address; 8] = [
     R8Address::A,
     R8Address::F,
     R8Address::B,
@@ -33,7 +33,7 @@ enum R16Address {
     PC = 10,
 }
 
-const ALL_16BIT_ADDRESSES: [R16Address;6] = [
+const ALL_16BIT_ADDRESSES: [R16Address; 6] = [
     R16Address::AF,
     R16Address::BC,
     R16Address::DE,
@@ -45,39 +45,49 @@ const ALL_16BIT_ADDRESSES: [R16Address;6] = [
 impl Cpu {
     pub fn new() -> Cpu {
         let registers = vec![0 ; 12];
-        Cpu{registers}
+        Cpu { registers }
     }
 
-    pub fn print_8bit_registers( &mut self ) {
-        println!("[{}]", ALL_8BIT_ADDRESSES.map(|address| format!("{:X}", self.read_8bit_register(address))).join(", "));
+    pub fn print_8bit_registers(&mut self) {
+        println!(
+            "[{}]",
+            ALL_8BIT_ADDRESSES.map(|address|
+                format!("{:X}", self.read_8bit_register(address))
+            ).join(", ")
+        );
     }
 
-    pub fn print_16bit_registers( &mut self ) {
-        println!("[{}]", ALL_16BIT_ADDRESSES.map(|address| format!("{:X}", self.read_16bit_register(address))).join(", "));
+    pub fn print_16bit_registers(&mut self) {
+        println!(
+            "[{}]",
+            ALL_16BIT_ADDRESSES.map(|address|
+                format!("{:X}", self.read_16bit_register(address))
+            ).join(", ")
+        );
     }
 
-    pub fn set_all_registers( &mut self, value: u8 ) {
+    pub fn set_all_registers(&mut self, value: u8) {
         for register in self.registers.iter_mut() {
             *register = value;
         }
     }
 
-    fn read_8bit_register( &mut self, address: R8Address ) -> u8 {
-        self.registers[ address as usize ]
+    fn read_8bit_register(&mut self, address: R8Address) -> u8 {
+        self.registers[address as usize]
     }
 
-    fn read_16bit_register( &mut self, address: R16Address ) -> u16 {
+    fn read_16bit_register(&mut self, address: R16Address) -> u16 {
         let register_index = address as usize;
-        let high = self.registers[ register_index ] as u16;
-        let low = self.registers[ register_index + 1 ] as u16;
+        let high = self.registers[register_index] as u16;
+        let low = self.registers[register_index + 1] as u16;
         (high << 8) | low
     }
 
-    fn write_8bit_register( &mut self, address: R8Address, value: u8 ) {
-        self.registers[ address as usize ] = value;
+    fn write_8bit_register(&mut self, address: R8Address, value: u8) {
+        self.registers[address as usize] = value;
     }
 
-    fn write_16bit_register( &mut self, address: R16Address, value: u16 ) {
+    fn write_16bit_register(&mut self, address: R16Address, value: u16) {
         let high = (value >> 8) as u8;
         let low = value as u8;
         let register_index = address as usize;
@@ -85,13 +95,13 @@ impl Cpu {
         self.registers[register_index + 1] = low;
     }
 
-    pub fn debug_routine( &mut self ) {
+    pub fn debug_routine(&mut self) {
         self.print_8bit_registers();
         self.print_16bit_registers();
-        self.set_all_registers( 0xFF );
+        self.set_all_registers(0xff);
         self.print_8bit_registers();
         self.print_16bit_registers();
-        self.write_16bit_register(R16Address::AF, 0xABCD);
+        self.write_16bit_register(R16Address::AF, 0xabcd);
         self.print_8bit_registers();
         self.print_16bit_registers();
     }
