@@ -1,7 +1,9 @@
 pub struct Cpu {
     registers: Vec<u8>,
+    ram: Vec<u8>,
 }
 
+#[derive(Debug, Clone)]
 enum R8Address {
     A = 0,
     F = 1,
@@ -24,6 +26,7 @@ const ALL_8BIT_ADDRESSES: [R8Address; 8] = [
     R8Address::L,
 ];
 
+#[derive(Debug, Clone)]
 enum R16Address {
     AF = 0,
     BC = 2,
@@ -44,24 +47,25 @@ const ALL_16BIT_ADDRESSES: [R16Address; 6] = [
 
 impl Cpu {
     pub fn new() -> Cpu {
-        let registers = vec![0 ; 12];
-        Cpu { registers }
+        let registers = vec![0; 12];
+        let ram = vec![0; 65536];
+        Cpu { registers, ram }
     }
 
     pub fn print_8bit_registers(&mut self) {
         println!(
-            "[{}]",
+            "{}",
             ALL_8BIT_ADDRESSES.map(|address|
-                format!("{:X}", self.read_8bit_register(address))
+                format!("{:?}: {:X}", address.clone(), self.read_8bit_register(address))
             ).join(", ")
         );
     }
 
     pub fn print_16bit_registers(&mut self) {
         println!(
-            "[{}]",
+            "{}",
             ALL_16BIT_ADDRESSES.map(|address|
-                format!("{:X}", self.read_16bit_register(address))
+                format!("{:?}: {:X}", address.clone(), self.read_16bit_register(address))
             ).join(", ")
         );
     }
