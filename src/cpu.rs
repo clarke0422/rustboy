@@ -56,7 +56,7 @@ impl Cpu {
         println!(
             "{}",
             ALL_8BIT_ADDRESSES.map(|address|
-                format!("{:?}: {:X}", address.clone(), self.read_8bit_register(address))
+                format!("{:?}: {:X}", address.clone(), self.read_r8(address))
             ).join(", ")
         );
     }
@@ -65,7 +65,7 @@ impl Cpu {
         println!(
             "{}",
             ALL_16BIT_ADDRESSES.map(|address|
-                format!("{:?}: {:X}", address.clone(), self.read_16bit_register(address))
+                format!("{:?}: {:X}", address.clone(), self.read_r16(address))
             ).join(", ")
         );
     }
@@ -76,11 +76,11 @@ impl Cpu {
         }
     }
 
-    fn read_8bit_register(&mut self, address: R8Address) -> u8 {
+    fn read_r8(&mut self, address: R8Address) -> u8 {
         self.registers[address as usize]
     }
 
-    fn read_16bit_register(&mut self, address: R16Address) -> u16 {
+    fn read_r16(&mut self, address: R16Address) -> u16 {
         let register_index = address as usize;
         let high = self.registers[register_index] as u16;
         let low = self.registers[register_index + 1] as u16;
