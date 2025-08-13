@@ -1,6 +1,7 @@
 pub struct Cpu {
     registers: Vec<u8>,
     ram: Vec<u8>,
+    rom: Vec<u8>,
 }
 
 #[derive(Debug, Clone)]
@@ -46,10 +47,10 @@ const ALL_16BIT_ADDRESSES: [R16Address; 6] = [
 ];
 
 impl Cpu {
-    pub fn new() -> Cpu {
+    pub fn new(rom:Vec<u8>) -> Cpu {
         let registers = vec![0; 12];
         let ram = vec![0; 65536];
-        Cpu { registers, ram }
+        Cpu { registers, ram, rom }
     }
 
     fn read_r8(&mut self, address: R8Address) -> u8 {
