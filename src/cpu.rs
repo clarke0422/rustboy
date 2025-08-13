@@ -1,3 +1,26 @@
+use phf::phf_map;
+
+static INSTRUCTION_SET: phf::Map<u8, fn(&mut Cpu)> = phf_map! {
+    0x0u8 => |_| (),
+    0x40u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::B),
+    0x41u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::C),
+    0x42u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::D),
+    0xCBu8 => |cpu| cpu.execute_prefixed_instruction(),
+};
+
+fn decode_instruction(opcode: u8) -> Option<fn(&mut Cpu)> {
+    if let Some(instruction) = INSTRUCTION_SET.get(&opcode) {
+        println!("successfully decoded instruction for opcode: {:02X}", opcode);
+        Some(*instruction)
+    } else {
+        println!("instruction not found for opcode: {:02X}", opcode);
+        None
+    }
+}
+
+static PREFIXED_INSTRUCTION_SET: phf::Map<u8, fn(&mut Cpu)> = phf_map! {
+};
+
 pub struct Cpu {
     registers: Vec<u8>,
     ram: Vec<u8>,
@@ -90,13 +113,23 @@ impl Cpu {
         self.write_r16(R16Address::PC, program_counter+1);
         byte
     }
-    // fn decode_instruction(&mut self) -> fn(&mut Cpu) {
-
-    // }
 
     fn load_r8_r8(&mut self, dest: R8Address, source: R8Address) {
         let value = self.read_r8(source);
         self.write_r8(dest, value);
+    }
+
+    fn execute_instruction(&mut self) {
+        let instruction = decode_instruction(self.read_rom());
+        if let Some(function) = instruction {
+            function(self);
+        } 
+    }
+
+    fn execute_prefixed_instruction(&mut self) {
+        let opcode = self.read_rom();
+        let prefixed_instruction = PREFIXED_INSTRUCTION_SET[&opcode];
+        prefixed_instruction(self);
     }
 
     pub fn print_8bit_registers(&mut self) {
@@ -125,15 +158,12 @@ impl Cpu {
 
     pub fn debug_routine(&mut self) {
         self.set_all_registers(0);
+        self.write_r8(R8Address::C, 0x42);
         
-        self.write_r16(R16Address::PC, 0x0100);
+        self.write_r16(R16Address::PC, 0x157);
 
         self.print_16bit_registers();
-        println!("{:02X}", self.read_rom());
-        println!();
-        
+        self.execute_instruction();
         self.print_16bit_registers();
-        println!("{:02X}", self.read_rom());
-        println!();
     }
 }
