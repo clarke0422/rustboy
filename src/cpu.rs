@@ -2,10 +2,26 @@ use phf::phf_map;
 
 static INSTRUCTION_SET: phf::Map<u8, fn(&mut Cpu)> = phf_map! {
     0x0u8 => |_| (),
+
     0x40u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::B),
     0x41u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::C),
     0x42u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::D),
-    0xCBu8 => |cpu| cpu.execute_prefixed_instruction(),
+    0x43u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::E),
+    0x44u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::H),
+    0x45u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::L),
+    0x46u8 => |cpu| cpu.load_r8_ram(R8Address::B),
+    0x47u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::A),
+
+    0x48u8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::B),
+    0x49u8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::C),
+    0x4Au8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::D),
+    0x4Bu8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::E),
+    0x4Cu8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::H),
+    0x4Du8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::L),
+    0x4Eu8 => |cpu| cpu.load_r8_ram(R8Address::C),
+    0x4Fu8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::A),
+
+    0xCDu8 => |cpu| cpu.execute_prefixed_instruction(),
 };
 
 fn decode_instruction(opcode: u8) -> Option<fn(&mut Cpu)> {
@@ -39,6 +55,7 @@ enum R8Address {
     L = 7,
 }
 
+#[allow(dead_code)]
 const ALL_8BIT_ADDRESSES: [R8Address; 8] = [
     R8Address::A,
     R8Address::F,
@@ -60,6 +77,7 @@ enum R16Address {
     PC = 10,
 }
 
+#[allow(dead_code)]
 const ALL_16BIT_ADDRESSES: [R16Address; 6] = [
     R16Address::AF,
     R16Address::BC,
@@ -80,15 +98,15 @@ impl Cpu {
         self.registers[address as usize]
     }
 
+    fn write_r8(&mut self, address: R8Address, value: u8) {
+        self.registers[address as usize] = value;
+    }
+
     fn read_r16(&mut self, address: R16Address) -> u16 {
         let register_index = address as usize;
         let high = self.registers[register_index] as u16;
         let low = self.registers[register_index + 1] as u16;
         (high << 8) | low
-    }
-
-    fn write_r8(&mut self, address: R8Address, value: u8) {
-        self.registers[address as usize] = value;
     }
 
     fn write_r16(&mut self, address: R16Address, value: u16) {
@@ -99,13 +117,13 @@ impl Cpu {
         self.registers[register_index + 1] = low;
     }
 
-    // fn read_ram(&mut self, address: u16) -> u8 {
-    //     self.ram[address as usize]
-    // }
+    fn read_ram(&mut self, address: u16) -> u8 {
+        self.ram[address as usize]
+    }
 
-    // fn write_ram(&mut self, address: u16, value: u8) {
-    //     self.ram[address as usize] = value;
-    // }
+    fn write_ram(&mut self, address: u16, value: u8) {
+        self.ram[address as usize] = value;
+    }
 
     fn read_rom(&mut self) -> u8 {
         let program_counter = self.read_r16(R16Address::PC);
@@ -119,7 +137,13 @@ impl Cpu {
         self.write_r8(dest, value);
     }
 
-    fn execute_instruction(&mut self) {
+    fn load_r8_ram(&mut self, dest: R8Address) {
+        let ram_address = self.read_r16(R16Address::HL);
+        let value = self.read_ram(ram_address);
+        self.write_r8(dest, value);
+    }
+
+    pub fn execute_instruction(&mut self) {
         let instruction = decode_instruction(self.read_rom());
         if let Some(function) = instruction {
             function(self);
@@ -132,7 +156,8 @@ impl Cpu {
         prefixed_instruction(self);
     }
 
-    pub fn print_8bit_registers(&mut self) {
+    #[allow(dead_code)]
+    fn print_8bit_registers(&mut self) {
         println!(
             "{}",
             ALL_8BIT_ADDRESSES.map(|address|
@@ -141,7 +166,8 @@ impl Cpu {
         );
     }
 
-    pub fn print_16bit_registers(&mut self) {
+    #[allow(dead_code)]
+    fn print_16bit_registers(&mut self) {
         println!(
             "{}",
             ALL_16BIT_ADDRESSES.map(|address|
@@ -150,20 +176,44 @@ impl Cpu {
         );
     }
 
-    pub fn set_all_registers(&mut self, value: u8) {
+    #[allow(dead_code)]
+    fn set_all_registers(&mut self, value: u8) {
         for register in self.registers.iter_mut() {
             *register = value;
         }
     }
+}
 
-    pub fn debug_routine(&mut self) {
-        self.set_all_registers(0);
-        self.write_r8(R8Address::C, 0x42);
-        
-        self.write_r16(R16Address::PC, 0x157);
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-        self.print_16bit_registers();
-        self.execute_instruction();
-        self.print_16bit_registers();
+    #[test]
+    fn test_load_r8_r8() {
+        let mut rom = Vec::new();
+        rom.insert(0, 0x41u8);
+
+        let mut cpu = Cpu::new(rom);
+        cpu.set_all_registers(0);
+        cpu.write_r8(R8Address::C, 1);
+
+        assert_eq!(cpu.read_r8(R8Address::B), 0);
+        cpu.execute_instruction();
+        assert_eq!(cpu.read_r8(R8Address::B), 1);
+    }
+
+    #[test]
+    fn test_load_r8_ram() {
+        let mut rom = Vec::new();
+        rom.insert(0, 0x46u8);
+
+        let mut cpu = Cpu::new(rom);
+        cpu.set_all_registers(0);
+        cpu.write_ram(0x100, 1);
+        cpu.write_r16(R16Address::HL, 0x100);
+
+        assert_eq!(cpu.read_r8(R8Address::B), 0);
+        cpu.execute_instruction();
+        assert_eq!(cpu.read_r8(R8Address::B), 1);
     }
 }
