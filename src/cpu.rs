@@ -93,10 +93,10 @@ impl Cpu {
         byte
     }
 
-    pub fn execute_instruction(&mut self) -> i32 {
+    pub fn execute_instruction(&mut self) -> u64 {
         let opcode = self.read_rom();
         let cycles_run = match opcode {
-            0x0u8 => 1, // NOP
+            0x0u8 => 4, // NOP
 
             0x40u8 => self.load_r8_r8(R8Address::B, R8Address::B),
             0x41u8 => self.load_r8_r8(R8Address::B, R8Address::C),
@@ -158,32 +158,32 @@ impl Cpu {
             0x7Eu8 => self.load_r8_ram(R8Address::A),
             0x7Fu8 => self.load_r8_r8(R8Address::A, R8Address::A),
 
-            0xCDu8 => 1 + self.execute_prefixed_instruction(),
+            0xCDu8 => 4 + self.execute_prefixed_instruction(),
 
-            _ => {println!("instruction not found for opcode: {:02X}", opcode); 0},
+            _ => {println!("instruction not found for opcode: {:02X}", opcode); 4},
         };
         cycles_run
     }
 
-    fn execute_prefixed_instruction(&mut self) -> i32 {
+    fn execute_prefixed_instruction(&mut self) -> u64 {
         let opcode = self.read_rom();
         let cycles_run = match opcode {
-            _ => {println!("prefixed instruction not found for opcode: {:02X}", opcode); 0},
+            _ => {println!("prefixed instruction not found for opcode: {:02X}", opcode); 4},
         };
         cycles_run
     }
 
-    fn load_r8_r8(&mut self, dest: R8Address, source: R8Address) -> i32 {
+    fn load_r8_r8(&mut self, dest: R8Address, source: R8Address) -> u64 {
         let value = self.read_r8(source);
         self.write_r8(dest, value);
-        1 // cycles run
+        4 // cycles run
     }
 
-    fn load_r8_ram(&mut self, dest: R8Address)  -> i32 {
+    fn load_r8_ram(&mut self, dest: R8Address)  -> u64 {
         let ram_address = self.read_r16(R16Address::HL);
         let value = self.read_ram(ram_address);
         self.write_r8(dest, value);
-        1 // cycles run
+        4 // cycles run
     }
 
     #[allow(dead_code)]
