@@ -1,84 +1,3 @@
-use phf::phf_map;
-
-static INSTRUCTION_SET: phf::Map<u8, fn(&mut Cpu)> = phf_map! {
-    0x0u8 => |_| (),
-
-    0x40u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::B),
-    0x41u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::C),
-    0x42u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::D),
-    0x43u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::E),
-    0x44u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::H),
-    0x45u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::L),
-    0x46u8 => |cpu| cpu.load_r8_ram(R8Address::B),
-    0x47u8 => |cpu| cpu.load_r8_r8(R8Address::B, R8Address::A),
-    0x48u8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::B),
-    0x49u8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::C),
-    0x4Au8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::D),
-    0x4Bu8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::E),
-    0x4Cu8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::H),
-    0x4Du8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::L),
-    0x4Eu8 => |cpu| cpu.load_r8_ram(R8Address::C),
-    0x4Fu8 => |cpu| cpu.load_r8_r8(R8Address::C, R8Address::A),
-
-    0x50u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::B),
-    0x51u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::C),
-    0x52u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::D),
-    0x53u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::E),
-    0x54u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::H),
-    0x55u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::L),
-    0x56u8 => |cpu| cpu.load_r8_ram(R8Address::D),
-    0x57u8 => |cpu| cpu.load_r8_r8(R8Address::D, R8Address::A),
-    0x58u8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::B),
-    0x59u8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::C),
-    0x5Au8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::D),
-    0x5Bu8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::E),
-    0x5Cu8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::H),
-    0x5Du8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::L),
-    0x5Eu8 => |cpu| cpu.load_r8_ram(R8Address::E),
-    0x5Fu8 => |cpu| cpu.load_r8_r8(R8Address::E, R8Address::A),
-
-    0x60u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::B),
-    0x61u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::C),
-    0x62u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::D),
-    0x63u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::E),
-    0x64u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::H),
-    0x65u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::L),
-    0x66u8 => |cpu| cpu.load_r8_ram(R8Address::H),
-    0x67u8 => |cpu| cpu.load_r8_r8(R8Address::H, R8Address::A),
-    0x68u8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::B),
-    0x69u8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::C),
-    0x6Au8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::D),
-    0x6Bu8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::E),
-    0x6Cu8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::H),
-    0x6Du8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::L),
-    0x6Eu8 => |cpu| cpu.load_r8_ram(R8Address::L),
-    0x6Fu8 => |cpu| cpu.load_r8_r8(R8Address::L, R8Address::A),
-
-    0x78u8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::B),
-    0x79u8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::C),
-    0x7Au8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::D),
-    0x7Bu8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::E),
-    0x7Cu8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::H),
-    0x7Du8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::L),
-    0x7Eu8 => |cpu| cpu.load_r8_ram(R8Address::A),
-    0x7Fu8 => |cpu| cpu.load_r8_r8(R8Address::A, R8Address::A),
-
-    0xCDu8 => |cpu| cpu.execute_prefixed_instruction(),
-};
-
-fn decode_instruction(opcode: u8) -> Option<fn(&mut Cpu)> {
-    if let Some(instruction) = INSTRUCTION_SET.get(&opcode) {
-        println!("successfully decoded instruction for opcode: {:02X}", opcode);
-        Some(*instruction)
-    } else {
-        println!("instruction not found for opcode: {:02X}", opcode);
-        None
-    }
-}
-
-static PREFIXED_INSTRUCTION_SET: phf::Map<u8, fn(&mut Cpu)> = phf_map! {
-};
-
 pub struct Cpu {
     registers: Vec<u8>,
     ram: Vec<u8>,
@@ -174,28 +93,97 @@ impl Cpu {
         byte
     }
 
-    fn load_r8_r8(&mut self, dest: R8Address, source: R8Address) {
-        let value = self.read_r8(source);
-        self.write_r8(dest, value);
+    pub fn execute_instruction(&mut self) -> i32 {
+        let opcode = self.read_rom();
+        let cycles_run = match opcode {
+            0x0u8 => 1, // NOP
+
+            0x40u8 => self.load_r8_r8(R8Address::B, R8Address::B),
+            0x41u8 => self.load_r8_r8(R8Address::B, R8Address::C),
+            0x42u8 => self.load_r8_r8(R8Address::B, R8Address::D),
+            0x43u8 => self.load_r8_r8(R8Address::B, R8Address::E),
+            0x44u8 => self.load_r8_r8(R8Address::B, R8Address::H),
+            0x45u8 => self.load_r8_r8(R8Address::B, R8Address::L),
+            0x46u8 => self.load_r8_ram(R8Address::B),
+            0x47u8 => self.load_r8_r8(R8Address::B, R8Address::A),
+            0x48u8 => self.load_r8_r8(R8Address::C, R8Address::B),
+            0x49u8 => self.load_r8_r8(R8Address::C, R8Address::C),
+            0x4Au8 => self.load_r8_r8(R8Address::C, R8Address::D),
+            0x4Bu8 => self.load_r8_r8(R8Address::C, R8Address::E),
+            0x4Cu8 => self.load_r8_r8(R8Address::C, R8Address::H),
+            0x4Du8 => self.load_r8_r8(R8Address::C, R8Address::L),
+            0x4Eu8 => self.load_r8_ram(R8Address::C),
+            0x4Fu8 => self.load_r8_r8(R8Address::C, R8Address::A),
+
+            0x50u8 => self.load_r8_r8(R8Address::D, R8Address::B),
+            0x51u8 => self.load_r8_r8(R8Address::D, R8Address::C),
+            0x52u8 => self.load_r8_r8(R8Address::D, R8Address::D),
+            0x53u8 => self.load_r8_r8(R8Address::D, R8Address::E),
+            0x54u8 => self.load_r8_r8(R8Address::D, R8Address::H),
+            0x55u8 => self.load_r8_r8(R8Address::D, R8Address::L),
+            0x56u8 => self.load_r8_ram(R8Address::D),
+            0x57u8 => self.load_r8_r8(R8Address::D, R8Address::A),
+            0x58u8 => self.load_r8_r8(R8Address::E, R8Address::B),
+            0x59u8 => self.load_r8_r8(R8Address::E, R8Address::C),
+            0x5Au8 => self.load_r8_r8(R8Address::E, R8Address::D),
+            0x5Bu8 => self.load_r8_r8(R8Address::E, R8Address::E),
+            0x5Cu8 => self.load_r8_r8(R8Address::E, R8Address::H),
+            0x5Du8 => self.load_r8_r8(R8Address::E, R8Address::L),
+            0x5Eu8 => self.load_r8_ram(R8Address::E),
+            0x5Fu8 => self.load_r8_r8(R8Address::E, R8Address::A),
+
+            0x60u8 => self.load_r8_r8(R8Address::H, R8Address::B),
+            0x61u8 => self.load_r8_r8(R8Address::H, R8Address::C),
+            0x62u8 => self.load_r8_r8(R8Address::H, R8Address::D),
+            0x63u8 => self.load_r8_r8(R8Address::H, R8Address::E),
+            0x64u8 => self.load_r8_r8(R8Address::H, R8Address::H),
+            0x65u8 => self.load_r8_r8(R8Address::H, R8Address::L),
+            0x66u8 => self.load_r8_ram(R8Address::H),
+            0x67u8 => self.load_r8_r8(R8Address::H, R8Address::A),
+            0x68u8 => self.load_r8_r8(R8Address::L, R8Address::B),
+            0x69u8 => self.load_r8_r8(R8Address::L, R8Address::C),
+            0x6Au8 => self.load_r8_r8(R8Address::L, R8Address::D),
+            0x6Bu8 => self.load_r8_r8(R8Address::L, R8Address::E),
+            0x6Cu8 => self.load_r8_r8(R8Address::L, R8Address::H),
+            0x6Du8 => self.load_r8_r8(R8Address::L, R8Address::L),
+            0x6Eu8 => self.load_r8_ram(R8Address::L),
+            0x6Fu8 => self.load_r8_r8(R8Address::L, R8Address::A),
+
+            0x78u8 => self.load_r8_r8(R8Address::A, R8Address::B),
+            0x79u8 => self.load_r8_r8(R8Address::A, R8Address::C),
+            0x7Au8 => self.load_r8_r8(R8Address::A, R8Address::D),
+            0x7Bu8 => self.load_r8_r8(R8Address::A, R8Address::E),
+            0x7Cu8 => self.load_r8_r8(R8Address::A, R8Address::H),
+            0x7Du8 => self.load_r8_r8(R8Address::A, R8Address::L),
+            0x7Eu8 => self.load_r8_ram(R8Address::A),
+            0x7Fu8 => self.load_r8_r8(R8Address::A, R8Address::A),
+
+            0xCDu8 => 1 + self.execute_prefixed_instruction(),
+
+            _ => {println!("instruction not found for opcode: {:02X}", opcode); 0},
+        };
+        cycles_run
     }
 
-    fn load_r8_ram(&mut self, dest: R8Address) {
+    fn execute_prefixed_instruction(&mut self) -> i32 {
+        let opcode = self.read_rom();
+        let cycles_run = match opcode {
+            _ => {println!("prefixed instruction not found for opcode: {:02X}", opcode); 0},
+        };
+        cycles_run
+    }
+
+    fn load_r8_r8(&mut self, dest: R8Address, source: R8Address) -> i32 {
+        let value = self.read_r8(source);
+        self.write_r8(dest, value);
+        1 // cycles run
+    }
+
+    fn load_r8_ram(&mut self, dest: R8Address)  -> i32 {
         let ram_address = self.read_r16(R16Address::HL);
         let value = self.read_ram(ram_address);
         self.write_r8(dest, value);
-    }
-
-    pub fn execute_instruction(&mut self) {
-        let instruction = decode_instruction(self.read_rom());
-        if let Some(function) = instruction {
-            function(self);
-        } 
-    }
-
-    fn execute_prefixed_instruction(&mut self) {
-        let opcode = self.read_rom();
-        let prefixed_instruction = PREFIXED_INSTRUCTION_SET[&opcode];
-        prefixed_instruction(self);
+        1 // cycles run
     }
 
     #[allow(dead_code)]
