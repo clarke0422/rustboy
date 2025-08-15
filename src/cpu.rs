@@ -149,6 +149,14 @@ impl Cpu {
             0x6Eu8 => self.load_r8_ram(R8Address::L),
             0x6Fu8 => self.load_r8_r8(R8Address::L, R8Address::A),
 
+            0x70u8 => self.load_ram_r8(R8Address::B),
+            0x71u8 => self.load_ram_r8(R8Address::C),
+            0x72u8 => self.load_ram_r8(R8Address::D),
+            0x73u8 => self.load_ram_r8(R8Address::E),
+            0x74u8 => self.load_ram_r8(R8Address::H),
+            0x75u8 => self.load_ram_r8(R8Address::L),
+            // HALT
+            0x77u8 => self.load_ram_r8(R8Address::A),
             0x78u8 => self.load_r8_r8(R8Address::A, R8Address::B),
             0x79u8 => self.load_r8_r8(R8Address::A, R8Address::C),
             0x7Au8 => self.load_r8_r8(R8Address::A, R8Address::D),
@@ -179,10 +187,17 @@ impl Cpu {
         4 // cycles run
     }
 
-    fn load_r8_ram(&mut self, dest: R8Address)  -> u64 {
+    fn load_r8_ram(&mut self, dest: R8Address) -> u64 {
         let ram_address = self.read_r16(R16Address::HL);
         let value = self.read_ram(ram_address);
         self.write_r8(dest, value);
+        4 // cycles run
+    }
+
+    fn load_ram_r8(&mut self, source: R8Address) -> u64 {
+        let ram_address = self.read_r16(R16Address::HL);
+        let value = self.read_r8(source);
+        self.write_ram(ram_address, value);
         4 // cycles run
     }
 
