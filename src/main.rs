@@ -6,6 +6,9 @@ use std::thread::sleep;
 mod cpu;
 use crate::cpu::Cpu;
 
+mod ppu;
+use crate::ppu::Ppu;
+
 const FRAME_CYCLES: u64 = 70224; // cycles per 59.7 Hz frame, based on 4.194304 MHz clock speed
 
 fn main() -> io::Result<()> {
